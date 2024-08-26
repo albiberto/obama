@@ -19,7 +19,7 @@ COPY ["src/Obama.Shared/Obama.Shared.csproj", "Obama.Shared/"]
 RUN echo "Contents of /src directory:" && ls -R /src
 
 # Run dotnet restore with the correct path to the csproj file
-RUN dotnet restore "Obama/Obama.csproj"
+RUN dotnet restore "Obama/Obama.csproj" --verbosity detailed
 
 # Copy the entire project and build it
 COPY . .
