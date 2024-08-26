@@ -15,6 +15,9 @@ COPY ["src/Obama.Domain/Obama.Domain.csproj", "Obama.Domain/"]
 COPY ["src/Obama.Infrastructure/Obama.Infrastructure.csproj", "Obama.Infrastructure/"]
 COPY ["src/Obama.Shared/Obama.Shared.csproj", "Obama.Shared/"]
 
+# List the contents of the directories for debugging
+RUN echo "Contents of /src directory:" && ls -R /src
+
 RUN dotnet restore "Obama.csproj"
 
 # Copy the entire project and build it
