@@ -15,7 +15,7 @@ COPY ["src/Obama.Domain/Obama.Domain.csproj", "Obama.Domain/"]
 COPY ["src/Obama.Infrastructure/Obama.Infrastructure.csproj", "Obama.Infrastructure/"]
 COPY ["src/Obama.Shared/Obama.Shared.csproj", "Obama.Shared/"]
 
-RUN dotnet restore "src/Obama/Obama.csproj"
+RUN dotnet restore "Obama/Obama.csproj"
 
 # Copy the entire project and build it
 COPY . .
