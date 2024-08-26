@@ -15,7 +15,7 @@ COPY ["src/Obama.Infrastructure/Obama.Infrastructure.csproj", "src/Obama.Infrast
 COPY ["src/Obama.Shared/Obama.Shared.csproj", "src/Obama.Shared/"]
 RUN dotnet restore "./src/Obama/Obama.csproj"
 COPY . .
-WORKDIR "/src/src/Obama"
+WORKDIR "/src/Obama"
 RUN dotnet build "./Obama.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 FROM build AS publish
