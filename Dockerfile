@@ -1,27 +1,33 @@
-#See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
-
+# Base image with ASP.NET Core runtime
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-USER app
 WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
+# Build stage with .NET SDK
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["src/Obama/Obama.csproj", "src/Obama/"]
-COPY ["src/Obama.Domain/Obama.Domain.csproj", "src/Obama.Domain/"]
-COPY ["src/Obama.Infrastructure/Obama.Infrastructure.csproj", "src/Obama.Infrastructure/"]
-COPY ["src/Obama.Shared/Obama.Shared.csproj", "src/Obama.Shared/"]
-RUN dotnet restore "./src/Obama/Obama.csproj"
+
+# Copy csproj files and restore dependencies
+COPY ["Obama/Obama.csproj", "Obama/"]
+COPY ["Obama.Domain/Obama.Domain.csproj", "Obama.Domain/"]
+COPY ["Obama.Infrastructure/Obama.Infrastructure.csproj", "Obama.Infrastructure/"]
+COPY ["Obama.Shared/Obama.Shared.csproj", "Obama.Shared/"]
+
+RUN dotnet restore "Obama/Obama.csproj"
+
+# Copy the entire project and build it
 COPY . .
 WORKDIR "/src/Obama"
-RUN dotnet build "./Obama.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "Obama.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
+# Publish the application
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Obama.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "Obama.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
+# Final stage with runtime image
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
