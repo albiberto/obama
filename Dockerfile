@@ -10,10 +10,10 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copy csproj files and restore dependencies
-COPY ["Obama/Obama.csproj", "Obama/"]
-COPY ["Obama.Domain/Obama.Domain.csproj", "Obama.Domain/"]
-COPY ["Obama.Infrastructure/Obama.Infrastructure.csproj", "Obama.Infrastructure/"]
-COPY ["Obama.Shared/Obama.Shared.csproj", "Obama.Shared/"]
+COPY ["src/Obama/Obama.csproj", "Obama/"]
+COPY ["src/Obama.Domain/Obama.Domain.csproj", "Obama.Domain/"]
+COPY ["src/Obama.Infrastructure/Obama.Infrastructure.csproj", "Obama.Infrastructure/"]
+COPY ["src/Obama.Shared/Obama.Shared.csproj", "Obama.Shared/"]
 
 RUN dotnet restore "Obama/Obama.csproj"
 
