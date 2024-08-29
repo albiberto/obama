@@ -1,38 +1,15 @@
-# Base image with ASP.NET Core runtime
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+FROM mcr.microsoft.com/dotnet/sdk:8.0@sha256:35792ea4ad1db051981f62b313f1be3b46b1f45cadbaa3c288cd0d3056eefb83 AS build-env
+WORKDIR /App
 
-# Build stage with .NET SDK
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
+# Copy everything
+COPY . ./
+# Restore as distinct layers
+RUN dotnet restore
+# Build and publish a release
+RUN dotnet publish -c Release -o out
 
-# Copy csproj files and restore dependencies
-COPY ["src/Obama/Obama.csproj", "Obama/"]
-COPY ["src/Obama.Domain/Obama.Domain.csproj", "Obama.Domain/"]
-COPY ["src/Obama.Infrastructure/Obama.Infrastructure.csproj", "Obama.Infrastructure/"]
-COPY ["src/Obama.Shared/Obama.Shared.csproj", "Obama.Shared/"]
-
-# List the contents of the directories for debugging
-RUN echo "Contents of /src directory:" && ls -R /src
-
-# Run dotnet restore with the correct path to the csproj file
-RUN dotnet restore "Obama/Obama.csproj" --verbosity detailed
-
-# Copy the entire project and build it
-COPY . .
-WORKDIR "/src/Obama"
-RUN dotnet build "Obama.csproj" -c $BUILD_CONFIGURATION -o /app/build
-
-# Publish the application
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "Obama.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-# Final stage with runtime image
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Obama.dll"]
+# Build runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0@sha256:6c4df091e4e531bb93bdbfe7e7f0998e7ced344f54426b7e874116a3dc3233ff
+WORKDIR /App
+COPY --from=build-env /App/out .
+ENTRYPOINT ["dotnet", "DotNet.Docker.dll"]
