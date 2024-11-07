@@ -1,6 +1,6 @@
 ﻿namespace Obama.Domain;
 
-public record Role(string Name, bool Enabled) : Entity
+public record Role(string Name, bool Enabled) : Auditable
 {
     public Role() : this(string.Empty, false)
     {

@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.OData.Deltas;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
-using Microsoft.EntityFrameworkCore;
 using Obama.Domain;
 using Obama.Infrastructure;
 

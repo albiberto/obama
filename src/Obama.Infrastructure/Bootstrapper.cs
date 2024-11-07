@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Obama.Infrastructure.DevSpace;
+using Obama.Shared;
 
 namespace Obama.Infrastructure;
 

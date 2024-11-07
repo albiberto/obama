@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Obama.Infrastructure.DevSpace.Fakers;
+using Obama.Shared;
 
 namespace Obama.Infrastructure.DevSpace;
 

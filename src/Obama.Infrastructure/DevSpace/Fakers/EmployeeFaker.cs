@@ -11,7 +11,7 @@ public sealed class EmployeeFaker : Faker<Employee>
         {
             var role = faker.PickRandom(roles, 1).Single().Id;
 
-            return new Employee(faker.Person.FirstName, faker.Person.LastName, faker.Person.Email, role);
+            return new(faker.Person.FirstName, faker.Person.LastName, faker.Person.Email, faker.Random.Int(15000, 30000), role);
         });
     }
 }

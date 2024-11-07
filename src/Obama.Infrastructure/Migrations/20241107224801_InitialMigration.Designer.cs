@@ -12,7 +12,7 @@ using Obama.Infrastructure;
 namespace Obama.Infrastructure.Migrations
 {
     [DbContext(typeof(ObamaContext))]
-    [Migration("20240729215655_InitialMigration")]
+    [Migration("20241107224801_InitialMigration")]
     partial class InitialMigration
     {
         /// <inheritdoc />
@@ -31,6 +31,12 @@ namespace Obama.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<int>("Ags")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("FamilyName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -46,6 +52,9 @@ namespace Obama.Infrastructure.Migrations
                     b.Property<Guid>("RoleId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
 
                     b.HasIndex("RoleId");
@@ -59,12 +68,18 @@ namespace Obama.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("Enabled")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 

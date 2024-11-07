@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 
-namespace Obama.Infrastructure.DevSpace;
+namespace Obama.Shared;
 
 public interface IDbSeeder<in TContext> where TContext : DbContext
 {

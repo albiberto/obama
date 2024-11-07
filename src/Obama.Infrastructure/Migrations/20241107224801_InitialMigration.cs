@@ -17,7 +17,9 @@ namespace Obama.Infrastructure.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Enabled = table.Column<bool>(type: "bit", nullable: false)
+                    Enabled = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -32,7 +34,10 @@ namespace Obama.Infrastructure.Migrations
                     GivenName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     FamilyName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Mail = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                    Ags = table.Column<int>(type: "int", nullable: false),
+                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -4,7 +4,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using static System.Threading.Tasks.Task;
 
-namespace Obama.Infrastructure.DevSpace;
+namespace Obama.Shared;
 
 internal class MigrationHostedService<TContext>(IServiceProvider serviceProvider, Func<TContext, IServiceProvider, Task> seeder) : BackgroundService where TContext : DbContext
 {
@@ -29,7 +29,7 @@ internal class MigrationHostedService<TContext>(IServiceProvider serviceProvider
             var strategy = context.Database.CreateExecutionStrategy();
             await strategy.ExecuteAsync(InvokeSeederAsync);
             
-            logger.LogInformation("Migration of the database associated with context {{DbContextName}} has completed", typeof(TContext).Name);
+            logger.LogInformation("Migration of the database associated with context {DbContextName} has completed", typeof(TContext).Name);
         }
         catch (Exception ex)
         {

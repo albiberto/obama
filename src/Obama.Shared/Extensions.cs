@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using static System.Threading.Tasks.Task;
 
-namespace Obama.Infrastructure.DevSpace;
+namespace Obama.Shared;
 
 public static class Extensions
 {
