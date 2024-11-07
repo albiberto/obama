@@ -42,10 +42,16 @@ static IEdmModel GetEdmModel()
     builder.EntitySet<Role>("Roles"); 
     builder.EntitySet<Employee>("Employees"); 
     
-    builder.EntityType<Employee>()
+    builder
+        .EntityType<Employee>()
         .Collection
         .Function("mostRecent")
         .Returns<string>();
-        
+    
+    builder
+        .Function("returnAllForKidsBooks")
+        .ReturnsFromEntitySet<Employee>("employees")
+        .Parameter<string>("role");;
+    
     return builder.GetEdmModel(); 
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OData.Deltas;
+using Microsoft.AspNetCore.OData.Formatter;
 using Microsoft.AspNetCore.OData.Query;
 using Microsoft.AspNetCore.OData.Routing.Controllers;
 using Obama.Domain;
@@ -136,6 +137,15 @@ public class EmployeesController(ObamaContext context, ILogger<EmployeesControll
 
         return employee is { }
             ? Ok($"{employee.GivenName} {employee.FamilyName}")
-            : NotFound("No employees found");
+            : NotFound("No employee found");
+    }
+    
+    [HttpGet("odata/Employees/returnAllEmployeesForRole()")]
+    public IActionResult ReturnAllEmployeesForRole([FromODataUri] string role)
+    {
+        var employees = context.Employees
+            .Where(e => e.Role != null && e.Role.Name == role);
+
+        return Ok(employees);
     }
 }

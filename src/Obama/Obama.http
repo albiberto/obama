@@ -1,1 +1,4 @@
 GET https://localhost:7033/odata/Employees/mostRecent()
+
+###
+GET https://localhost:7033/odata/Employees/returnAllForRole()
