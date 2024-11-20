@@ -1,0 +1,393 @@
+{
+	"info": {
+		"_postman_id": "eeacecb3-d4e5-4edc-8f3d-16566af7d190",
+		"name": "Obama - AperiTech",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1325649",
+		"_collection_link": "https://cowboysteam.postman.co/workspace/Albiberto~89db4bdd-59c3-41f1-8a61-0d7790109e4f/collection/1325649-eeacecb3-d4e5-4edc-8f3d-16566af7d190?action=share&source=collection_link&creator=1325649"
+	},
+	"item": [
+		{
+			"name": "Overview",
+			"item": [
+				{
+					"name": "$metadata",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{origin}}{{prefix}}$metadata",
+							"host": [
+								"{{origin}}{{prefix}}$metadata"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "$odata",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{origin}}$odata",
+							"host": [
+								"{{origin}}$odata"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "$count (ALL)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{origin}}{{prefix}}{{employees}}/$count",
+							"host": [
+								"{{origin}}{{prefix}}{{employees}}"
+							],
+							"path": [
+								"$count"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "$count",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{origin}}{{prefix}}{{employees}}?$count=true",
+							"host": [
+								"{{origin}}{{prefix}}{{employees}}"
+							],
+							"query": [
+								{
+									"key": "$count",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "$filter (WRONG)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{origin}}{{prefix}}{{employees}}?$filter=GivenName in ('Alberto', ''Matteo)",
+							"host": [
+								"{{origin}}{{prefix}}{{employees}}"
+							],
+							"query": [
+								{
+									"key": "$filter",
+									"value": "GivenName in ('Alberto', ''Matteo)"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "$filter",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{origin}}{{prefix}}{{employees}}?$filter=GivenName in ('Alberto', 'Matteo')",
+							"host": [
+								"{{origin}}{{prefix}}{{employees}}"
+							],
+							"query": [
+								{
+									"key": "$filter",
+									"value": "GivenName in ('Alberto', 'Matteo')"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "$orderby",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{origin}}{{prefix}}{{employees}}?$orderby=id asc",
+							"host": [
+								"{{origin}}{{prefix}}{{employees}}"
+							],
+							"query": [
+								{
+									"key": "$orderby",
+									"value": "id asc"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "$skip and $top",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{origin}}{{prefix}}{{employees}}?$orderby=id&skip=1&top=1",
+							"host": [
+								"{{origin}}{{prefix}}{{employees}}"
+							],
+							"query": [
+								{
+									"key": "$orderby",
+									"value": "id"
+								},
+								{
+									"key": "skip",
+									"value": "1"
+								},
+								{
+									"key": "top",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "$select",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{origin}}{{prefix}}{{employees}}?$filter=GivenName eq 'Alberto'&$select=GivenName,FamilyName",
+							"host": [
+								"{{origin}}{{prefix}}{{employees}}"
+							],
+							"query": [
+								{
+									"key": "$filter",
+									"value": "GivenName eq 'Alberto'"
+								},
+								{
+									"key": "$select",
+									"value": "GivenName,FamilyName"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "$expand",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{origin}}{{prefix}}{{employees}}?$filter=GivenName in ('Alberto', 'Matteo')&$expand=Role",
+							"host": [
+								"{{origin}}{{prefix}}{{employees}}"
+							],
+							"query": [
+								{
+									"key": "$filter",
+									"value": "GivenName in ('Alberto', 'Matteo')"
+								},
+								{
+									"key": "$expand",
+									"value": "Role"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "all in one",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{origin}}{{prefix}}{{employees}}?$filter=GivenName in ('Alberto', 'Matteo')&$select=GivenName,FamilyName&$expand=Role($select=Name)&$top=2&$count=true",
+							"host": [
+								"{{origin}}{{prefix}}{{employees}}"
+							],
+							"query": [
+								{
+									"key": "$filter",
+									"value": "GivenName in ('Alberto', 'Matteo')"
+								},
+								{
+									"key": "$select",
+									"value": "GivenName,FamilyName"
+								},
+								{
+									"key": "$expand",
+									"value": "Role($select=Name)"
+								},
+								{
+									"key": "$top",
+									"value": "2"
+								},
+								{
+									"key": "$count",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Actions and Fuctions",
+			"item": [
+				{
+					"name": "Inbound",
+					"item": [
+						{
+							"name": "GetEmployeesByRole",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{origin}}{{prefix}}{{employees}}/GetEmployeesByRole(role='AperiTeacher')",
+									"host": [
+										"{{origin}}{{prefix}}{{employees}}"
+									],
+									"path": [
+										"GetEmployeesByRole(role='AperiTeacher')"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "GetBonus",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{origin}}{{prefix}}{{employees}}(00000000-0000-0000-0000-000000000001)/GetBonus()",
+									"host": [
+										"{{origin}}{{prefix}}{{employees}}(00000000-0000-0000-0000-000000000001)"
+									],
+									"path": [
+										"GetBonus()"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ConferBonus",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"Bonus\": 100}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{origin}}{{prefix}}{{employees}}(00000000-0000-0000-0000-000000000001)/ConferBonus",
+									"host": [
+										"{{origin}}{{prefix}}{{employees}}(00000000-0000-0000-0000-000000000001)"
+									],
+									"path": [
+										"ConferBonus"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Unbound",
+					"item": [
+						{
+							"name": "GetHighestBonus",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{origin}}{{prefix}}GetHighestBonus()",
+									"host": [
+										"{{origin}}{{prefix}}GetHighestBonus()"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "ConferBonuses",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\"Bonus\": 100}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{origin}}{{prefix}}ConferBonuses()",
+									"host": [
+										"{{origin}}{{prefix}}ConferBonuses()"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Batch",
+			"item": [
+				{
+					"name": "$bacth",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"requests\": [\r\n        {\r\n            \"id\": \"1\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{employees}}?$filter=Role/Name eq 'Aperiteacher'&$expand=Role($select=Name)&$select=FamilyName,GivenName\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"2\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"Igor\",\r\n                \"FamilyName\": \"Biondo\",\r\n                \"Mail\": \"igor.biondo@euris.it\",\r\n                \"RoleId\": \"00000000-0000-0000-0000-000000000001\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"3\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"Alberto\",\r\n                \"FamilyName\": \"Firenzuola\",\r\n                \"Mail\": \"alberto.firenzuola@euris.it\",\r\n                \"RoleId\": \"00000000-0000-0000-0000-000000000001\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"4\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{employees}}?$filter=Role/Name eq 'Aperiteacher'&$expand=Role($select=Name)&$select=FamilyName,GivenName\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        }\r\n    ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{origin}}{{prefix}}$batch",
+							"host": [
+								"{{origin}}{{prefix}}$batch"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

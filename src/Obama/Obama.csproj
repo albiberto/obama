@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UserSecretsId>0f6c6551-af27-4912-ad7f-0e51cbf3030e</UserSecretsId>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.OData" Version="8.2.5"/>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.7"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.7">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1"/>
+        <PackageReference Include="Serilog" Version="4.0.1"/>
+        <PackageReference Include="Serilog.AspNetCore" Version="8.0.1"/>
+        <PackageReference Include="Serilog.Enrichers.ApplicationName" Version="0.1.0-rc0000"/>
+        <PackageReference Include="Serilog.Enrichers.Context" Version="4.6.5"/>
+        <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0"/>
+        <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.2"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="6.0.0"/>
+        <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1"/>
+        <PackageReference Include="Serilog.Enrichers.Process" Version="3.0.0"/>
+        <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Obama.Domain\Obama.Domain.csproj"/>
+        <ProjectReference Include="..\Obama.Infrastructure\Obama.Infrastructure.csproj"/>
+    </ItemGroup>
+
+</Project>

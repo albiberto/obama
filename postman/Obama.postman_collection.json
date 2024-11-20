@@ -1,0 +1,2174 @@
+{
+	"info": {
+		"_postman_id": "7a0c4e7d-3d28-40e7-9594-90d807a59a1b",
+		"name": "Obama",
+		"description": "Collection for testing UserController OData endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1325649",
+		"_collection_link": "https://cowboysteam.postman.co/workspace/Albiberto~89db4bdd-59c3-41f1-8a61-0d7790109e4f/collection/1325649-7a0c4e7d-3d28-40e7-9594-90d807a59a1b?action=share&source=collection_link&creator=1325649"
+	},
+	"item": [
+		{
+			"name": "Employee",
+			"item": [
+				{
+					"name": "Success",
+					"item": [
+						{
+							"name": "Create Employee (SUCCESS)",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Main function to execute the batch request and process the response\r",
+											"(() => {\r",
+											"    /**\r",
+											"     * Retrieve origin and uri endpoint from environment and return an object containing URLs.\r",
+											"     * @returns {Object} - An object with 'url' and 'endpoint' properties.\r",
+											"     */\r",
+											"    const buildEnvironment = () => ({\r",
+											"        url: `${pm.environment.get(\"origin\")}${pm.environment.get(\"roles\")}`,\r",
+											"        endpoint: `${pm.environment.get(\"origin\")}/$batch`\r",
+											"    });\r",
+											"\r",
+											"    /**\r",
+											"     * Generate random names to create roles and set them in environment variables.\r",
+											"     * @returns {Array<string>} - Array of generated role names.\r",
+											"     */\r",
+											"    const generateRandomRoles = () => [\r",
+											"        pm.variables.replaceIn(\"{{$randomJobType}}\"),\r",
+											"        pm.variables.replaceIn(\"{{$randomJobType}}\")\r",
+											"    ];\r",
+											"\r",
+											"    /**\r",
+											"     * Creates the batch request object containing an array of requests.\r",
+											"     * \r",
+											"     * @param {Array<string>} roles - The array of role names.\r",
+											"     * @param {string} url - The URL for the request.\r",
+											"     * @returns {Object} - The batch request object with a 'requests' key.\r",
+											"     */\r",
+											"    const createBatchRequest = (roles, url) => ({\r",
+											"        requests: roles.map((role, index) => ({\r",
+											"            id: `${index + 1}`,\r",
+											"            method: \"POST\",\r",
+											"            url,\r",
+											"            headers: { \"Content-Type\": \"application/json\" },\r",
+											"            body: { Name: role, Enabled: true }\r",
+											"        }))\r",
+											"    });\r",
+											"\r",
+											"    /**\r",
+											"     * Validates the batch response and processes individual responses.\r",
+											"     * \r",
+											"     * @param {Object} res - The response of the request.\r",
+											"     * @param {Array<string>} roles - The array of role names.\r",
+											"     */\r",
+											"    const validateAndProcessResponse = (res, roles) => {\r",
+											"        pm.test(\"Roles batch response status code is 200\", () => pm.expect(res.code).to.equal(200));\r",
+											"        \r",
+											"        const jsonData = res.json();\r",
+											"\r",
+											"        pm.test(\"Roles batch response contains correct data\", () => pm.expect(jsonData.responses).to.have.lengthOf(roles.length));\r",
+											"\r",
+											"        jsonData.responses.forEach((response, index) => {\r",
+											"            const { status, body } = response;\r",
+											"\r",
+											"            var role = roles[index];\r",
+											"\r",
+											"            pm.test(`Role ${role} is created successfully`, () => {\r",
+											"                pm.expect(status).to.eql(201);\r",
+											"                pm.expect(body).to.have.property('Id');\r",
+											"                pm.expect(body.Name).to.eql(role);\r",
+											"                pm.expect(body.Enabled).to.be.true;\r",
+											"            });\r",
+											"\r",
+											"            pm.environment.set(`roleId_${index + 1}`, body.Id);\r",
+											"        });\r",
+											"    };\r",
+											"\r",
+											"    /**\r",
+											"    * Generates random first name, last name, and email, then stores them in environment variables.\r",
+											"    * \r",
+											"    * The generated values are retrieved from Postman's built-in random data variables\r",
+											"    * and saved to the environment for later use in requests or tests.\r",
+											"    */\r",
+											"    const createEmployeeEnvironment = () => {\r",
+											"        pm.environment.set(\"employeeGivenName_1\", pm.variables.replaceIn(\"{{$randomFirstName}}\"));\r",
+											"        pm.environment.set(\"employeeFamilyName_1\", pm.variables.replaceIn(\"{{$randomLastName}}\"));\r",
+											"    };\r",
+											"\r",
+											"    const environment = buildEnvironment();\r",
+											"    const roles = generateRandomRoles();\r",
+											"\r",
+											"    // Send the batch request\r",
+											"    pm.sendRequest({\r",
+											"        url: environment.endpoint,\r",
+											"        method: 'POST',\r",
+											"        header: { 'Content-Type': 'application/json' },\r",
+											"        body: {\r",
+											"            mode: 'raw',\r",
+											"            raw: JSON.stringify(createBatchRequest(roles, environment.url))\r",
+											"        }\r",
+											"    }, (err, res) => {\r",
+											"        if (err) {\r",
+											"            console.log(`An error occurred during roles creation: ${err}`);\r",
+											"        } else {\r",
+											"            validateAndProcessResponse(res, roles);\r",
+											"            console.log('Roles created successfully');\r",
+											"        }\r",
+											"    });\r",
+											"\r",
+											"    createEmployeeEnvironment();\r",
+											"})();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"(() => {",
+											"    /**",
+											"     * Retrieve environment variables for employee creation.",
+											"     * @returns {Object} - An object containing expected employee details.",
+											"     */",
+											"    const getExpected = () => ({",
+											"        GivenName: pm.environment.get(\"employeeGivenName_1\"),",
+											"        FamilyName: pm.environment.get(\"employeeFamilyName_1\"),",
+											"        Mail: `${pm.environment.get(\"employeeGivenName_1\")}.${pm.environment.get(\"employeeFamilyName_1\")}@mail.test`,",
+											"        RoleId: pm.environment.get(\"roleId_1\")",
+											"    });",
+											"",
+											"    /**",
+											"     * Validate the employee response.",
+											"     * ",
+											"     * @param {Object} response - The response object.",
+											"     * @param {Object} expected - The expected values in response",
+											"     * @returns {string} - The employee ID.",
+											"     */",
+											"    const validateResponse = (response, expected) => {",
+											"        const { GivenName, FamilyName, Mail, RoleId, Id } = response;",
+											"",
+											"        pm.expect(GivenName).to.eql(expected.GivenName);",
+											"        pm.expect(FamilyName).to.eql(expected.FamilyName);",
+											"        pm.expect(Mail).to.eql(expected.Mail);",
+											"        pm.expect(RoleId).to.eql(expected.RoleId);",
+											"",
+											"        pm.expect(GivenName).to.be.a(\"string\");",
+											"        pm.expect(FamilyName).to.be.a(\"string\");",
+											"        pm.expect(Mail).to.be.a(\"string\");",
+											"        pm.expect(RoleId).to.be.a(\"string\");",
+											"        pm.expect(Id).to.exist;",
+											"",
+											"        return Id;",
+											"    };",
+											"",
+											"    const jsonData = pm.response.json();",
+											"",
+											"    // Main response status test",
+											"    pm.test(\"Employee response creation status code is 201\", () => pm.response.to.have.status(201));",
+											"",
+											"    // Test to verify the response contains the Employee ID",
+											"    pm.test(\"Employee ID is set\", () => pm.expect(jsonData).to.have.property('Id'));",
+											"",
+											"    // Validate the employee response",
+											"    const expected = getExpected();",
+											"    pm.test(\"Employee is created successfully\", () => pm.environment.set(\"employeeId\", validateResponse(jsonData, expected)));",
+											"})();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"GivenName\": \"{{employeeGivenName_1}}\",\n  \"FamilyName\": \"{{employeeFamilyName_1}}\",\n  \"Mail\": \"{{employeeGivenName_1}}.{{employeeFamilyName_1}}@mail.test\",\n  \"RoleId\": \"{{roleId_1}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{origin}}{{employees}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Employee by Filter eq Id  (SUCCESS)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"(() => {",
+											"    /**",
+											"     * Retrieve environment variables for employee creation.",
+											"     * @returns {Object} - An object containing expected employee details.",
+											"     */",
+											"    const getExpected = () => ({",
+											"        Id: pm.environment.get(\"employeeId\"),",
+											"        GivenName: pm.environment.get(\"employeeGivenName_1\"),",
+											"        FamilyName: pm.environment.get(\"employeeFamilyName_1\"),",
+											"        Mail: `${pm.environment.get(\"employeeGivenName_1\")}.${pm.environment.get(\"employeeFamilyName_1\")}@mail.test`,",
+											"        RoleId: pm.environment.get(\"roleId_1\")",
+											"    });",
+											"",
+											"    /**",
+											"     * Validate the employee response.",
+											"     * ",
+											"     * @param {Object} response - The response object.",
+											"     * @param {Object} expected - The expected values in response",
+											"     * @returns {string} - The employee ID.",
+											"     */",
+											"    const validateResponse = (actual, expected) => {",
+											"        const { GivenName, FamilyName, Mail, RoleId, Id } = actual;",
+											"",
+											"        pm.expect(Id).to.eql(expected.Id);",
+											"        pm.expect(GivenName).to.eql(expected.GivenName);",
+											"        pm.expect(FamilyName).to.eql(expected.FamilyName);",
+											"        pm.expect(Mail).to.eql(expected.Mail);",
+											"        pm.expect(RoleId).to.eql(expected.RoleId);",
+											"",
+											"        pm.expect(Id).to.be.a(\"string\");",
+											"        pm.expect(GivenName).to.be.a(\"string\");",
+											"        pm.expect(FamilyName).to.be.a(\"string\");",
+											"        pm.expect(Mail).to.be.a(\"string\");",
+											"        pm.expect(RoleId).to.be.a(\"string\");",
+											"    };",
+											"",
+											"    // Main response status test",
+											"    pm.test(\"Employee response status code is 200\", () => pm.response.to.have.status(200));",
+											"",
+											"    // Validate the employee",
+											"    const jsonData = pm.response.json();",
+											"    const actual = jsonData.value[0];",
+											"    const expected = getExpected();",
+											"    pm.test(`Employee \"${actual.GivenName} ${actual.FamilyName}\" data is correct`, () => validateResponse(actual, expected));",
+											"})();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{origin}}{{employees}}?$filter=Id eq {{employeeId}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"query": [
+										{
+											"key": "$filter",
+											"value": "Id eq {{employeeId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Employee with Representation  (SUCCESS)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"(() => {",
+											"    /**",
+											"     * Retrieve environment variables for employee creation.",
+											"     * @returns {Object} - An object containing expected employee details.",
+											"     */",
+											"    const getExpected = () => ({",
+											"        Id: pm.environment.get(\"employeeId\"),",
+											"        GivenName: pm.environment.get(\"employeeGivenName_2\"),",
+											"        FamilyName: pm.environment.get(\"employeeFamilyName_2\"),",
+											"        Mail: `${pm.environment.get(\"employeeGivenName_2\")}.${pm.environment.get(\"employeeFamilyName_2\")}@mail.test`,",
+											"        RoleId: pm.environment.get(\"roleId_2\")",
+											"    });",
+											"",
+											"    /**",
+											"     * Validate the employee response.",
+											"     * ",
+											"     * @param {Object} response - The response object.",
+											"     * @param {Object} expected - The expected values in response",
+											"     * @returns {string} - The employee ID.",
+											"     */",
+											"    const validateResponse = (actual, expected) => {",
+											"        const { GivenName, FamilyName, Mail, RoleId, Id } = actual;",
+											"",
+											"        pm.expect(Id).to.eql(expected.Id);",
+											"        pm.expect(GivenName).to.eql(expected.GivenName);",
+											"        pm.expect(FamilyName).to.eql(expected.FamilyName);",
+											"        pm.expect(Mail).to.eql(expected.Mail);",
+											"        pm.expect(RoleId).to.eql(expected.RoleId);",
+											"",
+											"        pm.expect(Id).to.be.a(\"string\");",
+											"        pm.expect(GivenName).to.be.a(\"string\");",
+											"        pm.expect(FamilyName).to.be.a(\"string\");",
+											"        pm.expect(Mail).to.be.a(\"string\");",
+											"        pm.expect(RoleId).to.be.a(\"string\");",
+											"    };",
+											"",
+											"    // Main response status test",
+											"    pm.test(\"Employee response status code is 200\", () => pm.response.to.have.status(200));",
+											"",
+											"    // Validate the employee",
+											"    const jsonData = pm.response.json();",
+											"    const actual = jsonData;",
+											"    const expected = getExpected();",
+											"    pm.test(`Employee \"${actual.GivenName} ${actual.FamilyName}\" data is correct`, () => validateResponse(actual, expected));",
+											"})();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"// Main function to execute the batch request and process the response\r",
+											"(() => {\r",
+											"    /**\r",
+											"    * Generates random first name, last name, and email, then stores them in environment variables.\r",
+											"    * \r",
+											"    * The generated values are retrieved from Postman's built-in random data variables\r",
+											"    * and saved to the environment for later use in requests or tests.\r",
+											"    */\r",
+											"    const createEmployeeEnvironment = () => {\r",
+											"        pm.environment.set(\"employeeGivenName_2\", pm.variables.replaceIn(\"{{$randomFirstName}}\"));\r",
+											"        pm.environment.set(\"employeeFamilyName_2\", pm.variables.replaceIn(\"{{$randomLastName}}\"));\r",
+											"    };\r",
+											"\r",
+											"    createEmployeeEnvironment();\r",
+											"})();\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Prefer",
+										"value": "return=representation",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"GivenName\": \"{{employeeGivenName_2}}\",\n  \"FamilyName\": \"{{employeeFamilyName_2}}\",\n  \"Mail\": \"{{employeeGivenName_2}}.{{employeeFamilyName_2}}@mail.test\",\n  \"RoleId\": \"{{roleId_2}}\"\n}"
+								},
+								"url": {
+									"raw": "{{origin}}{{employees}}/{{employeeId}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"path": [
+										"{{employeeId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Employee without Representation  (SUCCESS)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", () => pm.response.to.have.status(204));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"GivenName\": \"{{employeeGivenName_1}}\",\n  \"FamilyName\": \"{{employeeFamilyName_1}}\",\n  \"Mail\": \"{{employeeGivenName_1}}.{{employeeFamilyName_1}}@mail.test\",\n  \"RoleId\": \"{{roleId_1}}\"\n}"
+								},
+								"url": {
+									"raw": "{{origin}}{{employees}}/{{employeeId}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"path": [
+										"{{employeeId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Employee by Key  (SUCCESS)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"(() => {",
+											"    /**",
+											"     * Retrieve environment variables for employee creation.",
+											"     * @returns {Object} - An object containing expected employee details.",
+											"     */",
+											"    const getExpected = () => ({",
+											"        Id: pm.environment.get(\"employeeId\"),",
+											"        GivenName: pm.environment.get(\"employeeGivenName_1\"),",
+											"        FamilyName: pm.environment.get(\"employeeFamilyName_1\"),",
+											"        Mail: `${pm.environment.get(\"employeeGivenName_1\")}.${pm.environment.get(\"employeeFamilyName_1\")}@mail.test`,",
+											"        RoleId: pm.environment.get(\"roleId_1\")",
+											"    });",
+											"",
+											"    /**",
+											"     * Validate the employee response.",
+											"     * ",
+											"     * @param {Object} response - The response object.",
+											"     * @param {Object} expected - The expected values in response",
+											"     * @returns {string} - The employee ID.",
+											"     */",
+											"    const validateResponse = (actual, expected) => {",
+											"        const { GivenName, FamilyName, Mail, RoleId, Id } = actual;",
+											"",
+											"        pm.expect(Id).to.eql(expected.Id);",
+											"        pm.expect(GivenName).to.eql(expected.GivenName);",
+											"        pm.expect(FamilyName).to.eql(expected.FamilyName);",
+											"        pm.expect(Mail).to.eql(expected.Mail);",
+											"        pm.expect(RoleId).to.eql(expected.RoleId);",
+											"",
+											"        pm.expect(Id).to.be.a(\"string\");",
+											"        pm.expect(GivenName).to.be.a(\"string\");",
+											"        pm.expect(FamilyName).to.be.a(\"string\");",
+											"        pm.expect(Mail).to.be.a(\"string\");",
+											"        pm.expect(RoleId).to.be.a(\"string\");",
+											"    };",
+											"",
+											"    // Main response status test",
+											"    pm.test(\"Employee response status code is 200\", () => pm.response.to.have.status(200));",
+											"",
+											"    // Validate the employee",
+											"    const jsonData = pm.response.json();",
+											"    const actual = jsonData;",
+											"    const expected = getExpected();",
+											"    pm.test(`Employee \"${actual.GivenName} ${actual.FamilyName}\" data is correct`, () => validateResponse(actual, expected));",
+											"})();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{origin}}{{employees}}/{{employeeId}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"path": [
+										"{{employeeId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Patch Employee with Representation  (SUCCESS)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"(() => {",
+											"    /**",
+											"     * Retrieve environment variables for employee creation.",
+											"     * @returns {Object} - An object containing expected employee details.",
+											"     */",
+											"    const getExpected = () => ({",
+											"        Id: pm.environment.get(\"employeeId\"),",
+											"        GivenName: pm.environment.get(\"employeeGivenName_2\"),",
+											"        FamilyName: pm.environment.get(\"employeeFamilyName_1\"),",
+											"        Mail: `${pm.environment.get(\"employeeGivenName_2\")}.${pm.environment.get(\"employeeFamilyName_1\")}@mail.test`,",
+											"        RoleId: pm.environment.get(\"roleId_1\")",
+											"    });",
+											"",
+											"    /**",
+											"     * Validate the employee response.",
+											"     * ",
+											"     * @param {Object} response - The response object.",
+											"     * @param {Object} expected - The expected values in response",
+											"     * @returns {string} - The employee ID.",
+											"     */",
+											"    const validateResponse = (actual, expected) => {",
+											"        const { GivenName, FamilyName, Mail, RoleId, Id } = actual;",
+											"",
+											"        pm.expect(Id).to.eql(expected.Id);",
+											"        pm.expect(GivenName).to.eql(expected.GivenName);",
+											"        pm.expect(FamilyName).to.eql(expected.FamilyName);",
+											"        pm.expect(Mail).to.eql(expected.Mail);",
+											"        pm.expect(RoleId).to.eql(expected.RoleId);",
+											"",
+											"        pm.expect(Id).to.be.a(\"string\");",
+											"        pm.expect(GivenName).to.be.a(\"string\");",
+											"        pm.expect(FamilyName).to.be.a(\"string\");",
+											"        pm.expect(Mail).to.be.a(\"string\");",
+											"        pm.expect(RoleId).to.be.a(\"string\");",
+											"    };",
+											"",
+											"    // Main response status test",
+											"    pm.test(\"Employee response status code is 200\", () => pm.response.to.have.status(200));",
+											"",
+											"    // Validate the employee",
+											"    const jsonData = pm.response.json();",
+											"    const actual = jsonData;",
+											"    const expected = getExpected();",
+											"    pm.test(`Employee \"${actual.GivenName} ${actual.FamilyName}\" data is correct`, () => validateResponse(actual, expected));",
+											"})();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Prefer",
+										"value": "return=representation",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"GivenName\": \"{{employeeGivenName_2}}\",\n  \"Mail\": \"{{employeeGivenName_2}}.{{employeeFamilyName_1}}@mail.test\"\n}"
+								},
+								"url": {
+									"raw": "{{origin}}{{employees}}/{{employeeId}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"path": [
+										"{{employeeId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Patch Employee without Representation  (SUCCESS)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status code is 204\", () => pm.response.to.have.status(204));"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"FamilyName\": \"{{employeeFamilyName_2}}\",\n  \"Mail\": \"{{employeeGivenName_2}}.{{employeeFamilyName_2}}@mail.test\",\n  \"RoleId\": \"{{roleId_2}}\"\n}"
+								},
+								"url": {
+									"raw": "{{origin}}{{employees}}/{{employeeId}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"path": [
+										"{{employeeId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Employee by Filter eq GivenName, FamilyName  (SUCCESS)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"(() => {",
+											"    /**",
+											"     * Retrieve environment variables for employee creation.",
+											"     * @returns {Object} - An object containing expected employee details.",
+											"     */",
+											"    const getExpected = () => ({",
+											"        Id: pm.environment.get(\"employeeId\"),",
+											"        GivenName: pm.environment.get(\"employeeGivenName_2\"),",
+											"        FamilyName: pm.environment.get(\"employeeFamilyName_2\"),",
+											"        Mail: `${pm.environment.get(\"employeeGivenName_2\")}.${pm.environment.get(\"employeeFamilyName_2\")}@mail.test`,",
+											"        RoleId: pm.environment.get(\"roleId_2\")",
+											"    });",
+											"",
+											"    /**",
+											"     * Validate the employee response.",
+											"     * ",
+											"     * @param {Object} response - The response object.",
+											"     * @param {Object} expected - The expected values in response",
+											"     * @returns {string} - The employee ID.",
+											"     */",
+											"    const validateResponse = (actual, expected) => {",
+											"        const { GivenName, FamilyName, Mail, RoleId, Id } = actual;",
+											"",
+											"        pm.expect(Id).to.eql(expected.Id);",
+											"        pm.expect(GivenName).to.eql(expected.GivenName);",
+											"        pm.expect(FamilyName).to.eql(expected.FamilyName);",
+											"        pm.expect(Mail).to.eql(expected.Mail);",
+											"        pm.expect(RoleId).to.eql(expected.RoleId);",
+											"",
+											"        pm.expect(Id).to.be.a(\"string\");",
+											"        pm.expect(GivenName).to.be.a(\"string\");",
+											"        pm.expect(FamilyName).to.be.a(\"string\");",
+											"        pm.expect(Mail).to.be.a(\"string\");",
+											"        pm.expect(RoleId).to.be.a(\"string\");",
+											"    };",
+											"",
+											"    // Main response status test",
+											"    pm.test(\"Employee response status code is 200\", () => pm.response.to.have.status(200));",
+											"",
+											"    // Validate the employee",
+											"    const jsonData = pm.response.json();",
+											"    const actual = jsonData.value[0];",
+											"    const expected = getExpected();",
+											"    pm.test(`Employee \"${actual.GivenName} ${actual.FamilyName}\" data is correct`, () => validateResponse(actual, expected));",
+											"})();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{origin}}{{employees}}?$filter=GivenName eq '{{employeeGivenName_2}}' and FamilyName eq '{{employeeFamilyName_2}}'",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"query": [
+										{
+											"key": "$filter",
+											"value": "GivenName eq '{{employeeGivenName_2}}' and FamilyName eq '{{employeeFamilyName_2}}'"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Employee  (SUCCESS)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"(() => {",
+											"    // Main response status test",
+											"    const mainTest = () => pm.test(\"Status code is 204\", () => pm.response.to.have.status(204));",
+											"",
+											"    /**",
+											"     * Retrieve origin and uri endpoint from environment and return an object containing URLs.",
+											"     * @returns {Object} - An object with 'url' and 'endpoint' properties.",
+											"     */",
+											"    const buildEnvironment = () => ({",
+											"        url: `${pm.environment.get(\"origin\")}${pm.environment.get(\"roles\")}`,",
+											"        endpoint: `${pm.environment.get(\"origin\")}/$batch`",
+											"    });",
+											"",
+											"    /**",
+											"     * Main function to remove roles by sending a batch request.",
+											"     */",
+											"    const deleteRoles = (environment, roles) => sendBatchRequest(environment.endpoint, createBatchRequest(environment.url, roles));",
+											"    ",
+											"    /**",
+											"     * Send the batch request to remove roles and handle the response.",
+											"     * ",
+											"     * @param {Object} requests - The batch request object.",
+											"     * @param {Function} callback - Callback function to process the response.",
+											"     */",
+											"    const sendBatchRequest = (endpoint, requests) => {",
+											"        pm.sendRequest({",
+											"            url: endpoint,",
+											"            method: 'POST',",
+											"            header: { 'Content-Type': 'application/json' },",
+											"            body: {",
+											"                mode: 'raw',",
+											"                raw: JSON.stringify(requests)",
+											"            }",
+											"        }, (err, res) => {",
+											"            if (err) {",
+											"                console.log(`An error occurred during roles deletion: ${err}`);",
+											"            } else {",
+											"                validateResponse(res);",
+											"                console.log(\"Roles deleted succesfully\");",
+											"            }",
+											"        });",
+											"    };",
+											"",
+											"    /**",
+											"     * Create batch request for removing roles based on role IDs.",
+											"     * ",
+											"     * @param {Array<string>} roles - Array of role IDs to be removed.",
+											"     * @returns {Object} - Batch request object with 'requests' key.",
+											"     */",
+											"    const createBatchRequest = (url, roles) => {",
+											"        return {",
+											"            requests: roles.map((role, index) => ({",
+											"                id: `${index + 1}`,",
+											"                method: \"DELETE\",",
+											"                url: `${url}/${pm.environment.get(role)}`,",
+											"                headers: { \"Content-Type\": \"application/json\" }",
+											"            }))",
+											"        };",
+											"    };",
+											"",
+											"    /**",
+											"     * Validate the response of the batch request and unset role variables.",
+											"     * ",
+											"     * @param {Object} res - The response of the batch request.",
+											"     * @param {Array<string>} roles - The array of role IDs that were deleted.",
+											"     */",
+											"    const validateResponse = (res) => {",
+											"        const jsonData = res.json();",
+											"",
+											"        pm.test(\"Roles batch response status code is 200\", () => pm.expect(res.code).to.equal(200));",
+											"        jsonData.responses.forEach((response, index) => pm.test(`Status code is 204 for role ${index + 1}`, () => pm.expect(response.status).to.eql(204)));",
+											"    };",
+											"",
+											"    /**",
+											"     * Unset specific environment variables used in the tests.",
+											"     * ",
+											"     * @param {Array<string>} additionalVariables - Additional variables to unset.",
+											"     */",
+											"    const unsetEnvironmentVariables = (additionalVariables = []) => {",
+											"        const baseVariables = [",
+											"            \"employeeId\",",
+											"            \"employeeGivenName_1\",",
+											"            \"employeeFamilyName_1\",",
+											"            \"roleName_1\",",
+											"            \"roleName_2\",",
+											"            \"employeeGivenName_2\",",
+											"            \"employeeFamilyName_2\"",
+											"        ];",
+											"",
+											"        const variables = [...baseVariables, ...additionalVariables];",
+											"",
+											"        variables.forEach(variable => pm.environment.unset(variable));",
+											"    };",
+											"",
+											"    // Execute main test and process roles removal",
+											"    mainTest();",
+											"",
+											"    // Delete roles",
+											"    const environment = buildEnvironment();",
+											"    const roles = [\"roleId_1\", \"roleId_2\"];",
+											"    deleteRoles(environment, roles);",
+											"    unsetEnvironmentVariables(roles)",
+											"})();",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{origin}}{{employees}}/{{employeeId}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"path": [
+										"{{employeeId}}"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Not Found",
+					"item": [
+						{
+							"name": "Get Employee by Key (NOT FOUND)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{origin}}{{employees}}/{{$guid}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"path": [
+										"{{$guid}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Employee  (NOT FOUND)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"GivenName\": \"John\",\n  \"FamilyName\": \"Doe\",\n  \"Mail\": \"john.doe@mail.test\",\n  \"RoleId\": \"{{$guid}}\"\n}"
+								},
+								"url": {
+									"raw": "{{origin}}{{employees}}/{{$guid}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"path": [
+										"{{$guid}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Patch Employee  (NOT FOUND)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"GivenName\": \"Jane\",\n  \"Mail\": \"jane.doe@mail.test\"\n}"
+								},
+								"url": {
+									"raw": "{{origin}}{{employees}}/{{$guid}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"path": [
+										"{{$guid}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Employee  (NOT FOUND)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "{{origin}}{{employees}}/{{$guid}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"path": [
+										"{{$guid}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"(() => {\r",
+									"    // Get the expected error message from environment variables\r",
+									"    const expectedMessage = \"Employee not found\";\r",
+									"\r",
+									"    // Test to verify the status code is 404\r",
+									"    pm.test(\"Status code is 404\", () => pm.response.to.have.status(404));\r",
+									"\r",
+									"    // Test to check the response code and error message\r",
+									"    pm.test(\"Check response code and message\", () => {\r",
+									"        const jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.error.code).to.eql(\"404\");\r",
+									"        pm.expect(jsonData.error.message).to.eql(expectedMessage);\r",
+									"    });\r",
+									"})();"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "BadRequest",
+					"item": [
+						{
+							"name": "Create Employee (BAD REQUEST)",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{origin}}{{employees}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Employee with Representation (BAD REQUEST)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{origin}}{{employees}}/{{$guid}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"path": [
+										"{{$guid}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Patch Employee with Representation (BAD REQUEST)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									},
+									{
+										"key": "Prefer",
+										"value": "return=representation",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": {
+									"raw": "{{origin}}{{employees}}/{{$guid}}",
+									"host": [
+										"{{origin}}{{employees}}"
+									],
+									"path": [
+										"{{$guid}}"
+									]
+								}
+							},
+							"response": []
+						}
+					],
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									""
+								]
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"packages": {},
+								"exec": [
+									"(() => {\r",
+									"    // Get the expected error message from environment variables\r",
+									"    const expectedMessage = \"Employee cannot be null\";\r",
+									"\r",
+									"    // Test to verify the status code is 400\r",
+									"    pm.test(\"Status code is 400\", () => pm.response.to.have.status(400));\r",
+									"\r",
+									"    // Test to check the response code and error message\r",
+									"    pm.test(\"Check response code and message\", () => {\r",
+									"        const jsonData = pm.response.json();\r",
+									"        pm.expect(jsonData.error.code).to.eql(\"400\");\r",
+									"        pm.expect(jsonData.error.message).to.eql(expectedMessage);\r",
+									"    });\r",
+									"})();"
+								]
+							}
+						}
+					]
+				},
+				{
+					"name": "Batch",
+					"item": [
+						{
+							"name": "Create  Employees (BATCH)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"(() => {\r",
+											"    const getExpectedEmployees = () => ({\r",
+											"        employee1: {\r",
+											"            Id: pm.environment.get(\"employee_1_Id\"),\r",
+											"            GivenName: pm.environment.get(\"givenName_1\"),\r",
+											"            FamilyName: pm.environment.get(\"FamilyName\"),\r",
+											"            Mail: pm.environment.get(\"mail_1\"),\r",
+											"            RoleId: pm.environment.get(\"roleId_1\")\r",
+											"        },\r",
+											"        employee2: {\r",
+											"            Id: pm.environment.get(\"employee_2_Id\"),\r",
+											"            GivenName: pm.environment.get(\"givenName_2\"),\r",
+											"            FamilyName: pm.environment.get(\"FamilyName\"),\r",
+											"            Mail: pm.environment.get(\"mail_2\"),\r",
+											"            RoleId: pm.environment.get(\"roleId_2\")\r",
+											"        },\r",
+											"    });\r",
+											"\r",
+											"    const validateCommonFields = (response, expected) => {\r",
+											"        const { GivenName, FamilyName, Mail, RoleId } = response;\r",
+											"\r",
+											"        pm.expect(GivenName).to.eql(expected.GivenName);\r",
+											"        pm.expect(FamilyName).to.eql(expected.FamilyName);\r",
+											"        pm.expect(Mail).to.eql(expected.Mail);\r",
+											"        pm.expect(RoleId).to.eql(expected.RoleId);\r",
+											"\r",
+											"        pm.expect(GivenName).to.be.a(\"string\");\r",
+											"        pm.expect(FamilyName).to.be.a(\"string\");\r",
+											"        pm.expect(Mail).to.be.a(\"string\");\r",
+											"        pm.expect(RoleId).to.exist;\r",
+											"    };\r",
+											"\r",
+											"    const validateCreateResponse = (response, expected) => {\r",
+											"        const { Id } = response.body;\r",
+											"\r",
+											"        validateCommonFields(response.body, expected);\r",
+											"        pm.expect(response.status).to.eql(201);\r",
+											"        pm.expect(Id).to.exist;\r",
+											"\r",
+											"        return Id;\r",
+											"    };\r",
+											"\r",
+											"    const validateGetResponse = (response, expected) => {\r",
+											"        const { Id } = response;\r",
+											"\r",
+											"        validateCommonFields(response, expected);\r",
+											"        pm.expect(Id).to.eql(expected.Id);\r",
+											"    };\r",
+											"\r",
+											"    const validateBatchResponse = (response) => {\r",
+											"        pm.test(\"Validate status code 200 and batch response length of 3\", () => {\r",
+											"            pm.response.to.have.status(200);\r",
+											"            pm.expect(response.responses).to.have.lengthOf(3);\r",
+											"        });\r",
+											"    };\r",
+											"\r",
+											"    const validateAndSetCreateResponse = (response, expected, envVarName) => {\r",
+											"        const employeeId = validateCreateResponse(response, expected);\r",
+											"        pm.environment.set(envVarName, employeeId);\r",
+											"        return employeeId;\r",
+											"    };\r",
+											"\r",
+											"    const validateGetResponseAndEmployees = (getResponse, expectedEmployees) => {\r",
+											"        const employees = getResponse.body.value;\r",
+											"\r",
+											"        pm.test(\"GET request returns status 200\", () => pm.expect(getResponse.status).to.eql(200));\r",
+											"        pm.test(\"GET request returns the correct number of employees\", () => pm.expect(employees).to.have.lengthOf(expectedEmployees.length));\r",
+											"\r",
+											"        employees.forEach((employee, index) => {\r",
+											"            pm.test(`Employee (${expectedEmployees[index].GivenName}) data validation`, () => \r",
+											"                validateGetResponse(employee, expectedEmployees[index])\r",
+											"            );\r",
+											"        });\r",
+											"    };\r",
+											"\r",
+											"    // Get response JSON\r",
+											"    const jsonData = pm.response.json();\r",
+											"    const { employee1, employee2 } = getExpectedEmployees();\r",
+											"\r",
+											"    // Validate batch response\r",
+											"    validateBatchResponse(jsonData);\r",
+											"\r",
+											"    // Validate and set environment variables for create operations\r",
+											"    validateAndSetCreateResponse(jsonData.responses[0], employee1, \"employee_1_Id\");\r",
+											"    validateAndSetCreateResponse(jsonData.responses[1], employee2, \"employee_2_Id\");\r",
+											"\r",
+											"    // Validate GET request response and employee data\r",
+											"    validateGetResponseAndEmployees(jsonData.responses[2], [employee1, employee2]);\r",
+											"})();\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"(() => {\r",
+											"    /**\r",
+											"     * Retrieve origin and uri endpoint from environment and return an object containing URLs.\r",
+											"     * @returns {Object} - An object with 'url' and 'endpoint' properties.\r",
+											"     */\r",
+											"    const buildEnvironment = () => ({\r",
+											"        url: `${pm.environment.get(\"origin\")}${pm.environment.get(\"roles\")}`,\r",
+											"        endpoint: `${pm.environment.get(\"origin\")}/$batch`\r",
+											"    });\r",
+											"\r",
+											"    /**\r",
+											"     * Generate random names to create roles and set them in environment variables.\r",
+											"     * @returns {Array<string>} - Array of generated role names.\r",
+											"     */\r",
+											"    const generateRandomRoles = () => [\r",
+											"        pm.variables.replaceIn(\"{{$randomJobType}}\"),\r",
+											"        pm.variables.replaceIn(\"{{$randomJobType}}\")\r",
+											"    ];\r",
+											"\r",
+											"    /**\r",
+											"     * Creates the batch request object containing an array of requests.\r",
+											"     * \r",
+											"     * @param {Array<string>} roles - The array of role names.\r",
+											"     * @param {string} url - The URL for the request.\r",
+											"     * @returns {Object} - The batch request object with a 'requests' key.\r",
+											"     */\r",
+											"    const createBatchRequest = (roles, url) => ({\r",
+											"        requests: roles.map((role, index) => ({\r",
+											"            id: `${index + 1}`,\r",
+											"            method: \"POST\",\r",
+											"            url,\r",
+											"            headers: { \"Content-Type\": \"application/json\" },\r",
+											"            body: { Name: role, Enabled: true }\r",
+											"        }))\r",
+											"    });\r",
+											"\r",
+											"    /**\r",
+											"     * Validates the batch response and processes individual responses.\r",
+											"     * \r",
+											"     * @param {Object} res - The response of the request.\r",
+											"     * @param {Array<string>} roles - The array of role names.\r",
+											"     */\r",
+											"    const validateAndProcessResponse = (res, roles) => {\r",
+											"        pm.test(\"Roles batch response status code is 200\", () => pm.expect(res.code).to.equal(200));\r",
+											"        \r",
+											"        const jsonData = res.json();\r",
+											"\r",
+											"        pm.test(\"Roles batch response contains correct data\", () => pm.expect(jsonData.responses).to.have.lengthOf(roles.length));\r",
+											"\r",
+											"        jsonData.responses.forEach((response, index) => {\r",
+											"            const { status, body } = response;\r",
+											"\r",
+											"            var role = roles[index];\r",
+											"\r",
+											"            pm.test(`Role ${role} is created successfully`, () => {\r",
+											"                pm.expect(status).to.eql(201);\r",
+											"                pm.expect(body).to.have.property('Id');\r",
+											"                pm.expect(body.Name).to.eql(role);\r",
+											"                pm.expect(body.Enabled).to.be.true;\r",
+											"            });\r",
+											"\r",
+											"            pm.environment.set(`roleId_${index + 1}`, body.Id);\r",
+											"        });\r",
+											"    };\r",
+											"\r",
+											"    /**\r",
+											"     * Sets the generated names and emails into the environment variables.\r",
+											"     */\r",
+											"    const setEnvironmentVariables = () => {\r",
+											"        const givenName_1 = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+											"        const givenName_2 = pm.variables.replaceIn(\"{{$randomFirstName}}\");\r",
+											"        const familyName = pm.variables.replaceIn(\"{{$randomLastName}}\");\r",
+											"\r",
+											"        pm.environment.set(\"givenName_1\", givenName_1);\r",
+											"        pm.environment.set(\"givenName_2\", givenName_2);\r",
+											"        pm.environment.set(\"familyName\", familyName);\r",
+											"        pm.environment.set(\"mail_1\", `${givenName_1}.${familyName}@mail.test`.toLowerCase());\r",
+											"        pm.environment.set(\"mail_2\", `${givenName_2}.${familyName}@mail.test`.toLowerCase());\r",
+											"    };\r",
+											"\r",
+											"    const environment = buildEnvironment();\r",
+											"    const roles = generateRandomRoles();\r",
+											"\r",
+											"    // Send the batch request\r",
+											"    pm.sendRequest({\r",
+											"        url: environment.endpoint,\r",
+											"        method: 'POST',\r",
+											"        header: { 'Content-Type': 'application/json' },\r",
+											"        body: {\r",
+											"            mode: 'raw',\r",
+											"            raw: JSON.stringify(createBatchRequest(roles, environment.url))\r",
+											"        }\r",
+											"    }, (err, res) => {\r",
+											"        if (err) {\r",
+											"            console.log(`An error occurred during roles creation: ${err}`);\r",
+											"        } else {\r",
+											"            validateAndProcessResponse(res, roles);\r",
+											"            console.log('Roles created successfully');\r",
+											"        }\r",
+											"    });\r",
+											"\r",
+											"    setEnvironmentVariables();\r",
+											"})();"
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"requests\": [\r\n        {\r\n            \"id\": \"1\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{base}}{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"{{givenName_1}}\",\r\n                \"FamilyName\": \"{{familyName}}\",\r\n                \"Mail\": \"{{mail_1}}\",\r\n                \"RoleId\": \"{{roleId_1}}\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"2\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{base}}{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"{{givenName_2}}\",\r\n                \"FamilyName\": \"{{familyName}}\",\r\n                \"Mail\": \"{{mail_2}}\",\r\n                \"RoleId\": \"{{roleId_2}}\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"3\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$filter=FamilyName eq '{{familyName}}'\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        }\r\n    ]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base}}/$batch",
+									"host": [
+										"{{base}}"
+									],
+									"path": [
+										"$batch"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Employees (BATCH)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get environment variables\r",
+											"const expectedFamilyName = pm.environment.get(\"common employee familyname\");\r",
+											"\r",
+											"const expectedRoleId1 = pm.environment.get(\"role 1 Id\");\r",
+											"const expectedRoleId2 = pm.environment.get(\"role 2 Id\");\r",
+											"\r",
+											"const expectedId1 = pm.environment.get(\"employee 1 Id\");\r",
+											"const expectedId2 = pm.environment.get(\"employee 2 Id\");\r",
+											"\r",
+											"const expectedGivenName1 = pm.environment.get(\"male employee givenname\");\r",
+											"const expectedFamilyName1 = pm.environment.get(\"male employee familyname\");\r",
+											"const expectedMail1 = `${expectedGivenName1}.${expectedFamilyName1}@mail.world`;\r",
+											"const expectedAnotherGivenName1 = pm.environment.get(\"another male employee givenname\");\r",
+											"const expectedAnotherMail1 = `${expectedAnotherGivenName1}.${expectedFamilyName1}@mail.world`;\r",
+											"\r",
+											"const expectedGivenName2 = pm.environment.get(\"female employee givenname\");\r",
+											"const expectedFamilyName2 = pm.environment.get(\"female employee familyname\");\r",
+											"const expectedAnotherGivenName2 = pm.environment.get(\"another female employee givenname\");\r",
+											"const expectedMail2 = `${expectedGivenName2}.${expectedFamilyName2}@mail.world`;\r",
+											"const expectedAnotherMail2 = `${expectedAnotherGivenName2}.${expectedFamilyName2}@mail.world`;\r",
+											"\r",
+											"// Get response JSON\r",
+											"const jsonData = pm.response.json();\r",
+											"\r",
+											"// Test to verify that the batch response contains correct data\r",
+											"pm.test(\"Check batch response contains correct data\", () => pm.expect(jsonData.responses).to.have.lengthOf(6));\r",
+											"\r",
+											"// Function to validate each response\r",
+											"const validateResponse = (response, statusCode, expectedGivenName, expectedFamilyName, expectedMail, expectedRoleId) => {\r",
+											"    pm.expect(response.status).to.eql(statusCode);\r",
+											"    \r",
+											"    const { GivenName, FamilyName, Mail, RoleId, Id } = response.body;\r",
+											"    pm.expect(GivenName).to.eql(expectedGivenName);\r",
+											"    pm.expect(FamilyName).to.eql(expectedFamilyName);\r",
+											"    pm.expect(Mail).to.eql(expectedMail);\r",
+											"    pm.expect(RoleId).to.eql(expectedRoleId);\r",
+											"    pm.expect(Id).to.exist;\r",
+											"        \r",
+											"    pm.expect(GivenName).to.be.a(\"string\");\r",
+											"    pm.expect(FamilyName).to.be.a(\"string\");\r",
+											"    pm.expect(Mail).to.be.a(\"string\");\r",
+											"    pm.expect(RoleId).to.exist;\r",
+											"};\r",
+											"\r",
+											"// Validate each response\r",
+											"const responses = jsonData.responses;\r",
+											"\r",
+											"// Validate response for request 1\r",
+											"const response1 = responses.find(r => r.id === \"1\");\r",
+											"pm.test(`Validate response for request 1: ${expectedAnotherGivenName1} ${expectedFamilyName1}`, () => \r",
+											"    validateResponse(response1, 200, expectedAnotherGivenName1, expectedFamilyName1, expectedAnotherMail1, expectedRoleId2)\r",
+											");\r",
+											"\r",
+											"// Validate response for request 2\r",
+											"const response2 = responses.find(r => r.id === \"2\");\r",
+											"pm.test(`Validate response for request 2: ${expectedAnotherGivenName2} ${expectedFamilyName2}`, () => \r",
+											"    pm.expect(response2.status).to.eql(204)\r",
+											");\r",
+											"\r",
+											"// Validate response for request 3\r",
+											"const response3 = responses.find(r => r.id === \"3\");\r",
+											"pm.test(`Validate response for request 3: ${expectedAnotherGivenName2} ${expectedFamilyName2}`, () => \r",
+											"    validateResponse(response3, 200, expectedAnotherGivenName2, expectedFamilyName2, expectedAnotherMail2, expectedRoleId1)\r",
+											");\r",
+											"\r",
+											"// Validate response for request 4\r",
+											"const response4 = responses.find(r => r.id === \"4\");\r",
+											"pm.test(`Validate response for request 4: ${expectedGivenName1} ${expectedFamilyName1}`, () => \r",
+											"    validateResponse(response4, 200, expectedGivenName1, expectedFamilyName1, expectedMail1, expectedRoleId2)\r",
+											");\r",
+											"\r",
+											"// Validate response for request 5\r",
+											"const response5 = responses.find(r => r.id === \"5\");\r",
+											"pm.test(`Validate response for request 5: ${expectedGivenName2} ${expectedFamilyName2}`, () => \r",
+											"    pm.expect(response5.status).to.eql(204)\r",
+											");\r",
+											"\r",
+											"// Validate response for request 6\r",
+											"const response6 = responses.find(r => r.id === \"6\");\r",
+											"pm.test(`Validate response for request 6: ${expectedGivenName2} ${expectedFamilyName2}`, () => \r",
+											"    validateResponse(response6, 200, expectedGivenName2, expectedFamilyName2, expectedMail2, expectedRoleId1)\r",
+											");\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"requests\": [\r\n        {\r\n            \"id\": \"1\",\r\n            \"method\": \"PUT\",\r\n            \"url\": \"{{base}}{{employees}}/{{employee 1 Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\",\r\n                \"Prefer\": \"return=representation\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"{{another male employee givenname}}\",\r\n                \"FamilyName\": \"{{male employee familyname}}\",\r\n                \"Mail\": \"{{another male employee givenname}}.{{male employee familyname}}@mail.world\",\r\n                \"RoleId\": \"{{role 2 Id}}\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"2\",\r\n            \"method\": \"PUT\",\r\n            \"url\": \"{{base}}{{employees}}/{{employee 2 Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"{{another female employee givenname}}\",\r\n                \"FamilyName\": \"{{female employee familyname}}\",\r\n                \"Mail\": \"{{another female employee givenname}}.{{female employee familyname}}@mail.world\",\r\n                \"RoleId\": \"{{role 1 Id}}\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"3\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}/{{employee 2 Id}}\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"4\",\r\n            \"method\": \"PATCH\",\r\n            \"url\": \"{{base}}{{employees}}/{{employee 1 Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\",\r\n                \"Prefer\": \"return=representation\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"{{male employee givenname}}\",\r\n                \"Mail\": \"{{male employee givenname}}.{{male employee familyname}}@mail.world\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"5\",\r\n            \"method\": \"PATCH\",\r\n            \"url\": \"{{base}}{{employees}}/{{employee 2 Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"{{female employee givenname}}\",\r\n                \"Mail\": \"{{female employee givenname}}.{{female employee familyname}}@mail.world\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"6\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}/{{employee 2 Id}}\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        }\r\n    ]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base}}/$batch",
+									"host": [
+										"{{base}}"
+									],
+									"path": [
+										"$batch"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Employees (BATCH)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Get environment variables\r",
+											"const employeeNotFoundErrorMessage = pm.environment.get(\"employee not found error message\");\r",
+											"\r",
+											"// Test to check if status code is 200\r",
+											"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+											"\r",
+											"// Test to verify that the batch response contains correct data\r",
+											"pm.test(\"Check batch response contains correct data\", () => {\r",
+											"    const jsonData = pm.response.json();\r",
+											"\r",
+											"    // Verify that the batch response contains 6 responses\r",
+											"    pm.expect(jsonData.responses).to.have.lengthOf(6);\r",
+											"\r",
+											"    const validateResponse = (response, statusCode, errorMessage) => {\r",
+											"        pm.expect(response.status).to.eql(statusCode);\r",
+											"        if (errorMessage) {\r",
+											"            pm.expect(response.body.error.code).to.eql(String(statusCode));\r",
+											"            pm.expect(response.body.error.message).to.eql(errorMessage);\r",
+											"        }\r",
+											"    };\r",
+											"\r",
+											"    // Validate each response\r",
+											"    const response1 = jsonData.responses[0];\r",
+											"    pm.test(\"First DELETE operation is successful\", () => validateResponse(response1, 204));\r",
+											"\r",
+											"    const response2 = jsonData.responses[1];\r",
+											"    pm.test(\"Second DELETE operation is successful\", () => validateResponse(response2, 204));\r",
+											"\r",
+											"    const response3 = jsonData.responses[2];\r",
+											"    pm.test(\"First GET request returns 404\", () => validateResponse(response3, 404, employeeNotFoundErrorMessage));\r",
+											"\r",
+											"    const response4 = jsonData.responses[3];\r",
+											"    pm.test(\"Second GET request returns 404\", () => validateResponse(response4, 404, employeeNotFoundErrorMessage));\r",
+											"\r",
+											"    const response5 = jsonData.responses[4];\r",
+											"    pm.test(\"Second DELETE request returns 404\", () => validateResponse(response5, 404, employeeNotFoundErrorMessage));\r",
+											"\r",
+											"    const response6 = jsonData.responses[5];\r",
+											"    pm.test(\"Second DELETE request returns 404\", () => validateResponse(response6, 404, employeeNotFoundErrorMessage));\r",
+											"});\r",
+											"\r",
+											"pm.environment.unset(\"employee 1 Id\");\r",
+											"pm.environment.unset(\"employee 2 Id\");\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"requests\": [\r\n        {\r\n            \"id\": \"1\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{employee 1 Id}}\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"2\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{employee 2 Id}}\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"3\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}/{{employee 1 Id}}\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"4\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}/{{employee 2 Id}}\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n          {\r\n            \"id\": \"5\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{employee 1 Id}}\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"6\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{employee 2 Id}}\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        }\r\n    ]\r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base}}/$batch",
+									"host": [
+										"{{base}}"
+									],
+									"path": [
+										"$batch"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Roles",
+			"item": [
+				{
+					"name": "Create Roles (Batch Success)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Get environment variables\r",
+									"const expectedRole1Name = pm.environment.get(\"role 1 name\");\r",
+									"const expectedRole2Name = pm.environment.get(\"role 2 name\");\r",
+									"const expectedEnabled = pm.environment.get(\"role enabled\") === 'true';\r",
+									"\r",
+									"// Get response json\r",
+									"const jsonData = pm.response.json();\r",
+									"\r",
+									"// Main response status test\r",
+									"pm.test(\"Status code is 200\", () => pm.response.to.have.status(200));\r",
+									"\r",
+									"// Test to verify that the batch response contains correct data\r",
+									"pm.test(\"Check batch response contains correct data\", () => pm.expect(jsonData.responses).to.have.lengthOf(2));\r",
+									"\r",
+									"// Function to validate each role response\r",
+									"const validateRoleResponse = (response, expectedName, expectedEnabled) => {\r",
+									"    const { status, body } = response;\r",
+									"\r",
+									"    pm.expect(status).to.eql(201);\r",
+									"\r",
+									"    const { Name, Enabled, Id } = body;\r",
+									"    pm.expect(Name).to.eql(expectedName);\r",
+									"    pm.expect(Enabled).to.eql(expectedEnabled);\r",
+									"\r",
+									"    pm.expect(Name).to.be.a(\"string\");\r",
+									"    pm.expect(Enabled).to.be.a(\"boolean\");\r",
+									"    pm.expect(Id).to.exist;\r",
+									"\r",
+									"    return Id;\r",
+									"};\r",
+									"\r",
+									"// Validate and set environment variables for Role 1\r",
+									"const response1 = jsonData.responses[0];\r",
+									"\r",
+									"// Test to check that the response body for Role 1 contains the 'Id' property\r",
+									"pm.test(`Employee ID for role 1 is set`, () => pm.expect(response1.body).to.have.property('Id'));\r",
+									"\r",
+									"// Validate the response details and set the environment variable for Role 1 Id\r",
+									"pm.test(`Validate response for role 1: ${expectedRole1Name}`, () => pm.environment.set(\"role 1 Id\", validateRoleResponse(response1, expectedRole1Name, expectedEnabled)));\r",
+									"\r",
+									"// Validate and set environment variables for Role 2\r",
+									"const response2 = jsonData.responses[1];\r",
+									"\r",
+									"// Test to check that the response body for Role 2 contains the 'Id' property\r",
+									"pm.test(`Employee ID for role 2 is set`, () => pm.expect(response2.body).to.have.property('Id'));\r",
+									"\r",
+									"// Validate the response details and set the environment variable for Role 2 Id\r",
+									"pm.test(`Validate response for role 2: ${expectedRole2Name}`, () => pm.environment.set(\"role 2 Id\", validateRoleResponse(response2, expectedRole2Name, expectedEnabled)));\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"/**\r",
+									" * Creates the batch request object containing an array of requests.\r",
+									" * \r",
+									" * @param {string} url - The URL for the request.\r",
+									" * @returns {Object} - The batch request object with a 'requests' key.\r",
+									" */\r",
+									"const createBatchRequest = (url) => ({\r",
+									"    requests: [\r",
+									"        {\r",
+									"            id: \"1\",\r",
+									"            method: \"POST\",\r",
+									"            url: url,\r",
+									"            headers: {\r",
+									"                \"Content-Type\": \"application/json\"\r",
+									"            },\r",
+									"            body: {\r",
+									"                Name: pm.environment.get(\"role 1 name\"),\r",
+									"                Enabled: true // Directly set Enabled to true\r",
+									"            }\r",
+									"        },\r",
+									"        {\r",
+									"            id: \"2\",\r",
+									"            method: \"POST\",\r",
+									"            url: url,\r",
+									"            headers: {\r",
+									"                \"Content-Type\": \"application/json\"\r",
+									"            },\r",
+									"            body: {\r",
+									"                Name: pm.environment.get(\"role 2 name\"),\r",
+									"                Enabled: true // Directly set Enabled to true\r",
+									"            }\r",
+									"        }\r",
+									"    ]\r",
+									"});\r",
+									"\r",
+									"/**\r",
+									" * Sets the role name in environment variables.\r",
+									" * \r",
+									" * @param {Array} roleNames - An array of role names.\r",
+									" */\r",
+									"const setRoleEnvironmentVariables = (roleNames) => {\r",
+									"    pm.environment.set(\"role 1 name\", roleNames[0]);\r",
+									"    pm.environment.set(\"role 2 name\", roleNames[1]);\r",
+									"};\r",
+									"\r",
+									"/**\r",
+									" * Validates the batch response.\r",
+									" * \r",
+									" * @param {Object} res - The response of the request.\r",
+									" */\r",
+									"const validateBatchResponse = (res) => {\r",
+									"    pm.test(\"Status code is 200\", () => pm.expect(res.status).to.equal(200));\r",
+									"    \r",
+									"    const jsonData = res.json();\r",
+									"    pm.test(\"Check batch response contains correct data\", () => {\r",
+									"        pm.expect(jsonData.responses).to.have.lengthOf(2);\r",
+									"    });\r",
+									"};\r",
+									"\r",
+									"/**\r",
+									" * Processes individual responses and sets environment variables.\r",
+									" * \r",
+									" * @param {Object} jsonData - The parsed JSON response from the batch request.\r",
+									" * @param {Array} roleNames - The original array of role names.\r",
+									" */\r",
+									"const processIndividualResponses = (jsonData, roleNames) => {\r",
+									"    jsonData.responses.forEach((response, index) => {\r",
+									"        pm.test(`Response ${index + 1} is valid`, () => {\r",
+									"            pm.expect(response.body).to.have.property('Id');\r",
+									"            \r",
+									"            const { status, body } = response;\r",
+									"            pm.expect(status).to.eql(201);\r",
+									"\r",
+									"            const { Name, Enabled, Id } = body;\r",
+									"            pm.expect(Name).to.eql(roleNames[index]);\r",
+									"            pm.expect(Enabled).to.eql(true);\r",
+									"            pm.expect(Name).to.be.a(\"string\");\r",
+									"            pm.expect(Enabled).to.be.a(\"boolean\");\r",
+									"            pm.expect(Id).to.exist;\r",
+									"            \r",
+									"            pm.environment.set(`role ${index + 1} Id`, Id);\r",
+									"        });\r",
+									"    });\r",
+									"};\r",
+									"\r",
+									"// Main function to execute the batch request and process the response\r",
+									"(function main() {\r",
+									"    // Get environment variables\r",
+									"    const origin = pm.environment.get(\"base\");\r",
+									"    const uri = pm.environment.get(\"roles\");\r",
+									"\r",
+									"    const url = `${origin}${uri}`;\r",
+									"    const endpoint = `${origin}/$batch`;\r",
+									"\r",
+									"    // Generate random job types for roles\r",
+									"    const roleNames = [\r",
+									"        pm.variables.replaceIn(\"{{$randomJobType}}\"),\r",
+									"        pm.variables.replaceIn(\"{{$randomJobType}}\")\r",
+									"    ];\r",
+									"\r",
+									"    // Set the role names in environment variables\r",
+									"    setRoleEnvironmentVariables(roleNames);\r",
+									"\r",
+									"    // Send the batch request\r",
+									"    pm.sendRequest({\r",
+									"        url: endpoint,\r",
+									"        method: 'POST',\r",
+									"        header: {\r",
+									"            'Content-Type': 'application/json'\r",
+									"        },\r",
+									"        body: {\r",
+									"            mode: 'raw',\r",
+									"            raw: JSON.stringify(createBatchRequest(url))\r",
+									"        }\r",
+									"    }, (err, res) => {\r",
+									"        if (err) {\r",
+									"            console.log(`ERROR: ${err}`);\r",
+									"        } else {\r",
+									"            validateBatchResponse(res);\r",
+									"            processIndividualResponses(res.json(), roleNames);\r",
+									"            console.log(\"Batch request was successful.\");\r",
+									"        }\r",
+									"    });\r",
+									"})();"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"requests\":[{\"id\":\"1\",\"method\":\"POST\",\"url\":\"http://localhost:5214/odata/roles\",\"headers\":{\"Content-Type\":\"application/json\"},\"body\":{\"Name\":\"Orchestrator\",\"Enabled\":true}},{\"id\":\"2\",\"method\":\"POST\",\"url\":\"http://localhost:5214/odata/roles\",\"headers\":{\"Content-Type\":\"application/json\"},\"body\":{\"Name\":\"Architect\",\"Enabled\":true}}]}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base}}/$batch",
+							"host": [
+								"{{base}}"
+							],
+							"path": [
+								"$batch"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Roles (Batch Success)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Status code is 204 for both responses\", function () {\r",
+									"    pm.expect(jsonData.responses[0].status).to.eql(204);\r",
+									"    pm.expect(jsonData.responses[1].status).to.eql(204);\r",
+									"});\r",
+									"\r",
+									"pm.environment.unset(\"role 1 Id\");\r",
+									"pm.environment.unset(\"role 2 Id\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"requests\": [\r\n        {\r\n            \"id\": \"1\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{roles}}/527D87DF-DF12-4996-7940-08DCB59C4D9A\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"2\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{roles}}/CC3656B1-09F8-4DB4-7941-08DCB59C4D9A\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            }\r\n        }\r\n    ]\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base}}/$batch",
+							"host": [
+								"{{base}}"
+							],
+							"path": [
+								"$batch"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Examples",
+			"item": [
+				{
+					"name": "Batch Create 10",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"requests\": [\r\n        // Create 10 users\r\n        {\r\n            \"id\": \"1\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{base}}{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"User1\",\r\n                \"FamilyName\": \"Test1\",\r\n                \"Mail\": \"user1.test1@example.com\",\r\n                \"RoleId\": \"{{roleId}}\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"2\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{base}}{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"User2\",\r\n                \"FamilyName\": \"Test2\",\r\n                \"Mail\": \"user2.test2@example.com\",\r\n                \"RoleId\": \"{{roleId}}\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"3\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{base}}{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"User3\",\r\n                \"FamilyName\": \"Test3\",\r\n                \"Mail\": \"user3.test3@example.com\",\r\n                \"RoleId\": \"{{roleId}}\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"4\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{base}}{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"User4\",\r\n                \"FamilyName\": \"Test4\",\r\n                \"Mail\": \"user4.test4@example.com\",\r\n                \"RoleId\": \"{{roleId}}\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"5\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{base}}{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"User5\",\r\n                \"FamilyName\": \"Test5\",\r\n                \"Mail\": \"user5.test5@example.com\",\r\n                \"RoleId\": \"{{roleId}}\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"6\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{base}}{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"User6\",\r\n                \"FamilyName\": \"Test6\",\r\n                \"Mail\": \"user6.test6@example.com\",\r\n                \"RoleId\": \"{{roleId}}\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"7\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{base}}{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"User7\",\r\n                \"FamilyName\": \"Test7\",\r\n                \"Mail\": \"user7.test7@example.com\",\r\n                \"RoleId\": \"{{roleId}}\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"8\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{base}}{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"User8\",\r\n                \"FamilyName\": \"Test8\",\r\n                \"Mail\": \"user8.test8@example.com\",\r\n                \"RoleId\": \"{{roleId}}\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"9\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{base}}{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"User9\",\r\n                \"FamilyName\": \"Test9\",\r\n                \"Mail\": \"user9.test9@example.com\",\r\n                \"RoleId\": \"{{roleId}}\"\r\n            }\r\n        },\r\n        {\r\n            \"id\": \"10\",\r\n            \"method\": \"POST\",\r\n            \"url\": \"{{base}}{{employees}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            },\r\n            \"body\": {\r\n                \"GivenName\": \"User10\",\r\n                \"FamilyName\": \"Test10\",\r\n                \"Mail\": \"user10.test10@example.com\",\r\n                \"RoleId\": \"{{roleId}}\"\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base}}/$batch",
+							"host": [
+								"{{base}}"
+							],
+							"path": [
+								"$batch"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Batch Queries",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"requests\": [\r\n        // Query to test filter\r\n        {\r\n            \"id\": \"1\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$filter=GivenName eq 'User1'\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        // Query to test expand on Role\r\n        {\r\n            \"id\": \"2\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$filter=GivenName eq 'User1' & expand=Role\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        // Query to test top\r\n        {\r\n            \"id\": \"3\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$filter=startswith(GivenName, 'User') & $orderby=GivenName desc & $top=2\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        // Query to test skip\r\n        {\r\n            \"id\": \"4\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$filter=startswith(GivenName, 'User') & $orderby=GivenName desc & $skip=5 &$top=2\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        // Query to test count\r\n        {\r\n            \"id\": \"5\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$filter=startswith(GivenName, 'User') &orderby=GivenName desc & $count=true\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        // Query to test orderby\r\n        {\r\n            \"id\": \"6\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$filter=startswith(GivenName, 'User') & $top=2 & $orderby=GivenName desc\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        // Query to test select\r\n        {\r\n            \"id\": \"7\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$filter=startswith(GivenName, 'User') & $top=2 & $select=GivenName,FamilyName\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        // Query to test search\r\n        {\r\n            \"id\": \"8\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$search=User & $top=2\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        // Query to test pagination with top and skip\r\n        {\r\n            \"id\": \"9\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$filter=startswith(GivenName, 'User') & $top=2&$skip=3\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        // Query to test filter with multiple conditions\r\n        {\r\n            \"id\": \"10\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$filter=GivenName eq 'User1' and FamilyName eq 'Test1'\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        // Query to test expand with select\r\n        {\r\n            \"id\": \"11\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$filter=startswith(GivenName, 'User') & $top=2 & $expand=Role($select=Name)\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        // Query to test orderby with multiple fields\r\n        {\r\n            \"id\": \"12\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$filter=startswith(GivenName, 'User') & $top=2 & $orderby=FamilyName asc, GivenName desc\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        },\r\n        // Query to test filter with functions\r\n        {\r\n            \"id\": \"13\",\r\n            \"method\": \"GET\",\r\n            \"url\": \"{{base}}{{employees}}?$filter=endswith(GivenName, '2')\",\r\n            \"headers\": {\r\n                \"Accept\": \"application/json\"\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base}}/$batch",
+							"host": [
+								"{{base}}"
+							],
+							"path": [
+								"$batch"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Batch Delete 10",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"requests\": [\r\n        // Delete User1\r\n        {\r\n            \"id\": \"1\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{user1Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            }\r\n        },\r\n                {\r\n            \"id\": \"2\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{user2Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            }\r\n        },\r\n                {\r\n            \"id\": \"3\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{user3Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            }\r\n        },\r\n                {\r\n            \"id\": \"4\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{user4Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            }\r\n        },\r\n                {\r\n            \"id\": \"5\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{user5Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            }\r\n        },\r\n                {\r\n            \"id\": \"6\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{user6Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            }\r\n        },\r\n                {\r\n            \"id\": \"7\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{user7Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            }\r\n        },\r\n                {\r\n            \"id\": \"8\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{user8Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            }\r\n        },\r\n                {\r\n            \"id\": \"9\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{user9Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            }\r\n        },\r\n                {\r\n            \"id\": \"10\",\r\n            \"method\": \"DELETE\",\r\n            \"url\": \"{{base}}{{employees}}/{{user10Id}}\",\r\n            \"headers\": {\r\n                \"Content-Type\": \"application/json\"\r\n            }\r\n        }\r\n    ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base}}/$batch",
+							"host": [
+								"{{base}}"
+							],
+							"path": [
+								"$batch"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base",
+			"value": "http://localhost:5214/odata"
+		},
+		{
+			"key": "employees",
+			"value": "/employees"
+		},
+		{
+			"key": "employeeId",
+			"value": ""
+		},
+		{
+			"key": "roleId",
+			"value": ""
+		}
+	]
+}
